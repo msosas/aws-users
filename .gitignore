@@ -1,0 +1,9 @@
+## Terraform
+.terraform*
+terraform.tfvars
+output.json
+plan
+terraform.tfstate*
+
+## SCripts
+credentials
