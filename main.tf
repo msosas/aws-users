@@ -5,6 +5,9 @@
 resource "aws_iam_user" "users" {
   for_each = toset([for user in local.users : user.name])
   name     = each.value
+  tags = {
+    terraform = true
+  }
 }
 
 resource "aws_iam_user_login_profile" "users_password" {
@@ -68,11 +71,12 @@ resource "aws_iam_group_policy" "general_group_policy" {
 
 
 ###############################
-##########  ROLES  ############
+#########  POLICIES  ##########
 ###############################
-resource "aws_iam_user_policy" "admin_access" {
-  for_each   = { for item_key, item in(flatten([for user_key, user in local.users : [for role_key, role in user.roles : [for account_key, account in role.account : { user = user.name, role = role.name, account = account }]]])) : item_key => item }
-  name       = "${each.value.role}AssumeRoleOn${each.value.account}"
+resource "aws_iam_user_policy" "assume_role" {
+  # https://github.com/hashicorp/terraform/issues/17179
+  for_each   = { for item_key, item in (flatten([for user in local.users : [for role in user.roles : {user = user.name, role = role.name, resources = join(", ", formatlist("\"arn:aws:iam::%s:role/${role.name}\"",role.account))} ]])) : "${item.user}Has${item.role}" => item}
+  name       = "${each.value.user}-${each.value.role}AssumeRole"
   depends_on = [aws_iam_user.users]
   user       = each.value.user
   policy     = <<EOF
@@ -82,7 +86,7 @@ resource "aws_iam_user_policy" "admin_access" {
     {
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
-      "Resource": "arn:aws:iam::${each.value.account}:role/${each.value.role}"
+      "Resource": [${each.value.resources}]
     }
   ]  
 }
