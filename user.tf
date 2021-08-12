@@ -8,18 +8,18 @@ locals {
       "name" : "test.admin",
       "roles" : [
         {
-          "name" : "RoleName",
-          "account" : ["12345678012", "210987654321"]
-        }
-      ]
-    },
-    {
-      "name" : "test.dev",
-      "roles" : [
+          "name" : "<Role01Name>",
+          "account" : [
+            "123123123123",
+          ]
+        },
         {
-          "name" : "DevAccess",
-          "account" : ["555566664421", "111111111111"]
-        }
+          "name" : "<Role02Name>",
+          "account" : [
+            "456789456789",
+            "123456123456"
+          ]
+        },
       ]
     },
   ]

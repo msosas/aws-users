@@ -39,6 +39,9 @@ resource "aws_iam_group_membership" "general" {
   name  = "GeneralGroupMembership"
   users = toset([for user in local.users : user.name])
   group = aws_iam_group.general.name
+  depends_on = [
+    aws_iam_user.users
+  ]
 }
 
 resource "aws_iam_group_policy" "general_group_policy" {
