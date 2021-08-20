@@ -44,6 +44,10 @@ resource "aws_iam_group_membership" "general" {
   ]
 }
 
+###############################
+#########  POLICIES  ##########
+###############################
+
 resource "aws_iam_group_policy" "general_group_policy" {
   name  = "GeneralGroupPolicy"
   group = aws_iam_group.general.name
@@ -63,7 +67,12 @@ resource "aws_iam_group_policy" "general_group_policy" {
       {
         "Effect" : "Allow",
         "Action" : [
-          "iam:GetAccountPasswordPolicy"
+          "iam:GetAccountPasswordPolicy",
+          "iam:ListMFADevices",
+          "iam:ListAccessKeys",
+          "iam:GetAccessKeyLastUsed",
+          "iam:CreateVirtualMFADevice",
+          "iam:EnableMFADevice"
         ],
         "Resource" : "*"
       }
@@ -72,10 +81,6 @@ resource "aws_iam_group_policy" "general_group_policy" {
 }
 
 
-
-###############################
-#########  POLICIES  ##########
-###############################
 resource "aws_iam_user_policy" "assume_role" {
   # https://github.com/hashicorp/terraform/issues/17179
   for_each   = { for item_key, item in (flatten([for user in local.users : [for role in user.roles : {user = user.name, role = role.name, resources = join(", ", formatlist("\"arn:aws:iam::%s:role/${role.name}\"",role.account))} ]])) : "${item.user}Has${item.role}" => item}
